@@ -8,6 +8,27 @@ yapar, duvarlar diker ve geceleri deliklerden çıkan **Greed** sürülerine kar
 > manzara, paralaks tepeler ve ses efektleri oyun açılırken **kodla üretilir**. Bu yüzden proje
 > çok hafiftir ve hazır asset indirmeye gerek duymaz.
 
+![Gunduz](docs/images/01-gunduz.png)
+
+| Gece savunması | Kanlı Ay |
+|---|---|
+| ![Gece](docs/images/02-gece.png) | ![Kanli Ay](docs/images/03-kanli-ay.png) |
+
+| Duvara saldıran Devasa Greed | Duvar ve tarla |
+|---|---|
+| ![Greed](docs/images/04-greed-saldirisi.png) | ![Duvar](docs/images/05-duvar-tarla.png) |
+
+Karakterler ve hükümdar (kodla üretilen sprite'lar, 6x büyütülmüş):
+
+![Karakterler](docs/images/06-karakterler.png)
+
+![Kral](docs/images/07-kral.png)
+
+> Bu görüntüler Unity ekran görüntüsü değildir: `Tools/Preview` altındaki doğrulama aracı,
+> oyunun **kendi sprite ve sahne kodunu** çalıştırıp yazılımda birleştirerek üretir. Sahne
+> düzenini ve pikselleri birebir gösterir; Unity'nin kendi render'ı küçük farklar (filtreleme,
+> aynı sıradaki sprite'ların çizim sırası) gösterebilir.
+
 ---
 
 ## 1. Nasıl çalıştırılır
@@ -101,7 +122,26 @@ bileşeninin Inspector'ından oyun çalışırken de değiştirebilirsin.
 
 ---
 
-## 6. Proje yapısı
+## 6. Unity'siz doğrulama aracı (`Tools/Preview`)
+
+Depoda, oyunu **Unity olmadan** çalıştırabilen küçük bir "sahte Unity" bulunur. Oyunun gerçek
+script'lerini başsız bir döngüde koşturur:
+
+```bash
+cd Tools/Preview
+./run.sh sim 40000      # ~7 oyun günü simüle et (çökme / mantık kontrolü)
+./run.sh shots          # oyundan ekran görüntüleri üret -> out/shots/*.png
+./run.sh sheet chars    # sprite sayfası bas (king | chars | build | all)
+```
+
+Gereksinim: `mono-mcs` ve `python3 + Pillow`. Bu klasör `Assets/` dışında olduğu için Unity
+derlemesine dahil olmaz. Ayrıntılar: `Tools/Preview/README.md`.
+
+Bu oyun geliştirilirken aracın yakaladığı gerçek hatalar: tezgahlarda sonsuz altın iadesi
+döngüsü, çalışmayan av ekonomisi, greed'lerin geceyi tamamlayamadan sönmesi, duvarların
+saniyeler içinde yıkılması, yok edilmiş düşmanın güncellenmeye devam etmesi.
+
+## 7. Proje yapısı
 
 ```
 Assets/Kingdom2D/
@@ -123,6 +163,7 @@ Assets/Kingdom2D/
 │  │  ├─ CameraRig.cs      Takip eden kamera + sarsıntı
 │  │  ├─ Hud.cs            Arayüz (sprite + piksel font ile)
 │  │  ├─ Sfx.cs            Matematiksel olarak üretilen ses efektleri
+│  │  ├─ NightGlow.cs      Ateş/meşale ışık haleleri (gece okunabilirliği)
 │  │  ├─ Fx.cs             Parçacık ve yükselen yazı efektleri
 │  │  ├─ GameInput.cs      Eski Input Manager + yeni Input System uyumlu girdi
 │  │  └─ Util.cs / Layer.cs / Enums.cs
@@ -131,6 +172,9 @@ Assets/Kingdom2D/
 │  └─ Structures/    Duvar, üs, tarla, alet tezgahı + ortak Structure temeli
 └─ Editor/
    └─ KingdomMenu.cs  "Kingdom 2D" menüsü (sahne oluştur / aç, rekoru sıfırla)
+
+Tools/Preview/        Unity'siz simülasyon + önizleme aracı (oyuna dahil değil)
+docs/images/          README'deki önizleme görüntüleri
 ```
 
 **Teknik notlar**
@@ -141,10 +185,12 @@ Assets/Kingdom2D/
 - Arayüz Unity UI (uGUI/TextMeshPro) kullanmaz; kameraya bağlı sprite'lar ve 3x5 piksel font ile
   çizilir, böylece paket bağımlılığı yoktur.
 - Kod hem eski hem yeni girdi sistemiyle derlenir (`ENABLE_INPUT_SYSTEM` kontrolü).
+- Gece, ekranın alt yarısını karartan dikey degrade bir perde + ateşlerin ışık haleleriyle
+  kurulur; gökyüzü, ay ve yıldızlar karartmanın dışında kalır.
 
 ---
 
-## 7. Geliştirme fikirleri
+## 8. Geliştirme fikirleri
 
 - Greed deliklerinin yıkılabilmesi (şövalyelerle) ve ada/bölge geçişi (*New Lands* gibi).
 - At yükseltmeleri (daha hızlı at, daha büyük kese), köpek/binek yardımcıları.

@@ -12,6 +12,7 @@ namespace Kingdom2D
         public const int MaxTier = 3;
 
         CoinSink sink;
+        NightGlow glow;
         Villager[] posts = new Villager[3];
         SpriteRenderer ghost;     // henüz yapılmamışken gösterilen soluk taslak
 
@@ -37,6 +38,9 @@ namespace Kingdom2D
             w.ghost.color = new Color(1f, 1f, 1f, 0.12f);
             w.sr = Util.Spawn(go.transform, Art.Wall(1, false), Vector3.zero, Layer.StructureBack, "wall");
             w.sr.enabled = false;
+
+            w.glow = NightGlow.Create(go.transform, new Vector3(0f, 1.1f, 0f), 5.5f, 0.42f, new Color(1f, 0.7f, 0.42f));
+            w.glow.On = false;
 
             w.sink = go.AddComponent<CoinSink>();
             w.SetupSink();
@@ -164,6 +168,11 @@ namespace Kingdom2D
         {
             base.Update();
             if (UnderConstruction) UpdateVisual();
+            if (glow != null)
+            {
+                glow.On = Standing;
+                glow.transform.localPosition = new Vector3(0f, Mathf.Max(0.8f, PostHeight + 0.3f), 0f);
+            }
         }
 
         // ------------------------------------------------------------ mevziler

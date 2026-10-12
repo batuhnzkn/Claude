@@ -91,15 +91,23 @@ namespace Kingdom2D
                 Pix p;
                 if (tier <= 1)
                 {
-                    p = new Pix(30, 26);
-                    // taş halka + odunlar
-                    for (int x = 6; x < 24; x += 4) p.Ellipse(x, 2, 2.4f, 1.8f, Pal.StoneDark);
-                    p.Line(8, 3, 20, 7, Pal.Wood, 2);
-                    p.Line(8, 7, 20, 3, Pal.WoodDark, 2);
+                    p = new Pix(44, 28);
+                    // sol: küçük çadır
+                    p.Tri(new Vector2(1, 0), new Vector2(17, 0), new Vector2(9, 15), Pal.Dark2);
+                    p.Tri(new Vector2(6, 0), new Vector2(12, 0), new Vector2(9, 9), Pal.Dark3);
+                    p.Rect(1, 0, 16, 1, Pal.Dark3);
+                    // orta: taş halka + odunlar (ateş NightGlow + Flame ile üstüne gelir)
+                    for (int x = 19; x < 33; x += 4) p.Ellipse(x, 2, 2.2f, 1.7f, Pal.StoneDark);
+                    p.Line(20, 3, 31, 6, Pal.Wood, 2);
+                    p.Line(20, 6, 31, 3, Pal.WoodDark, 2);
+                    // sağ: erzak sandığı
+                    p.Rect(34, 0, 7, 6, Pal.Wood);
+                    p.Rect(34, 3, 7, 1, Pal.WoodDark);
+                    p.Rect(34, 0, 7, 1, Pal.WoodDark);
                     // bayrak direği
-                    p.Rect(25, 0, 2, 24, Pal.WoodDark);
-                    p.Tri(new Vector2(22, 24), new Vector2(27, 21), new Vector2(27, 16), Pal.Cape);
-                    p.Rect(22, 16, 5, 8, Pal.Cape);
+                    p.Rect(41, 0, 2, 26, Pal.WoodDark);
+                    p.Rect(36, 18, 5, 8, Pal.Cape);
+                    p.Tri(new Vector2(36, 26), new Vector2(36, 18), new Vector2(32, 22), Pal.Cape);
                 }
                 else if (tier == 2)
                 {
@@ -200,12 +208,16 @@ namespace Kingdom2D
                 switch (kind)
                 {
                     case StandKind.Bow:
-                        p.Line(6, 12, 6, 20, Pal.Wood, 1);
-                        p.Line(6, 20, 9, 18, Pal.Wood, 1);
-                        p.Line(9, 18, 10, 16, Pal.Wood, 1);
-                        p.Line(10, 16, 9, 14, Pal.Wood, 1);
-                        p.Line(9, 14, 6, 12, Pal.Wood, 1);
-                        p.Rect(5, 12, 1, 9, Pal.White);
+                        // yay gövdesi (kavis) + ince kiriş
+                        p.Set(6, 21, Pal.WoodDark);
+                        p.Set(7, 20, Pal.Wood); p.Set(8, 19, Pal.Wood);
+                        p.Set(9, 18, Pal.Wood); p.Set(9, 17, Pal.Wood);
+                        p.Set(9, 16, Pal.Wood); p.Set(9, 15, Pal.Wood);
+                        p.Set(8, 14, Pal.Wood); p.Set(7, 13, Pal.Wood);
+                        p.Set(6, 12, Pal.WoodDark);
+                        for (int y = 12; y <= 21; y++) p.Set(6, y, Pal.Dark2);
+                        p.Rect(4, 16, 4, 1, Pal.Dark2);   // ok
+                        p.Set(8, 16, Pal.Metal);
                         break;
                     case StandKind.Hammer:
                         p.Rect(7, 11, 2, 9, Pal.Wood);
@@ -344,8 +356,8 @@ namespace Kingdom2D
             return Get("rock" + variant, () =>
             {
                 var p = new Pix(14, 9);
-                p.Ellipse(7, 1, 6.5f, 5f, Pal.StoneDark);
-                p.Ellipse(5, 2, 3.5f, 3f, Pal.Stone);
+                p.Ellipse(7, 1, 6.5f, 5f, Color.Lerp(Pal.StoneDark, Pal.Dark, 0.55f));
+                p.Ellipse(5, 2, 3.5f, 3f, Color.Lerp(Pal.Stone, Pal.Dark, 0.45f));
                 p.Rect(0, 0, 14, 1, Pal.Dark3);
                 return p.ToSprite(0.5f, 0f);
             });
@@ -359,10 +371,18 @@ namespace Kingdom2D
             {
                 return Get("sun", () =>
                 {
-                    var p = new Pix(28, 28);
-                    p.Disc(14, 14, 13f, new Color(1f, 0.85f, 0.4f, 0.18f));
-                    p.Disc(14, 14, 10f, new Color(1f, 0.9f, 0.55f, 0.45f));
-                    p.Disc(14, 14, 7.5f, new Color(1f, 0.96f, 0.78f, 1f));
+                    var p = new Pix(34, 34);
+                    for (int y = 0; y < 34; y++)
+                        for (int x = 0; x < 34; x++)
+                        {
+                            float d = Mathf.Sqrt((x - 16.5f) * (x - 16.5f) + (y - 16.5f) * (y - 16.5f));
+                            if (d <= 8f) p.Set(x, y, new Color(1f, 0.96f, 0.8f, 1f));
+                            else if (d < 17f)
+                            {
+                                float a = Mathf.Pow(1f - (d - 8f) / 9f, 2.3f) * 0.55f;
+                                p.Set(x, y, new Color(1f, 0.88f, 0.5f, a));
+                            }
+                        }
                     return p.ToSprite(0.5f, 0.5f);
                 });
             }
@@ -374,12 +394,21 @@ namespace Kingdom2D
             {
                 return Get("moon", () =>
                 {
-                    var p = new Pix(24, 24);
-                    p.Disc(12, 12, 11f, new Color(1f, 1f, 1f, 0.14f));
-                    p.Disc(12, 12, 8.5f, Pal.White);
-                    p.Disc(9, 14, 2.2f, new Color(0.85f, 0.85f, 0.8f, 1f));
-                    p.Disc(15, 9, 1.6f, new Color(0.85f, 0.85f, 0.8f, 1f));
-                    p.Disc(14, 15, 1.2f, new Color(0.85f, 0.85f, 0.8f, 1f));
+                    var p = new Pix(30, 30);
+                    for (int y = 0; y < 30; y++)
+                        for (int x = 0; x < 30; x++)
+                        {
+                            float d = Mathf.Sqrt((x - 14.5f) * (x - 14.5f) + (y - 14.5f) * (y - 14.5f));
+                            if (d <= 9f) p.Set(x, y, Pal.White);
+                            else if (d < 15f)
+                            {
+                                float a = Mathf.Pow(1f - (d - 9f) / 6f, 2.4f) * 0.4f;
+                                p.Set(x, y, new Color(0.85f, 0.9f, 1f, a));
+                            }
+                        }
+                    p.Disc(11, 16, 2.2f, new Color(0.84f, 0.84f, 0.79f, 1f));
+                    p.Disc(18, 11, 1.6f, new Color(0.84f, 0.84f, 0.79f, 1f));
+                    p.Disc(16, 18, 1.3f, new Color(0.84f, 0.84f, 0.79f, 1f));
                     return p.ToSprite(0.5f, 0.5f);
                 });
             }
@@ -451,13 +480,27 @@ namespace Kingdom2D
             {
                 var rng = new System.Random(seed);
                 var p = new Pix(w, h);
-                p.Rect(0, 0, w, h, Pal.GroundBody);
-                p.Rect(0, 0, w, Mathf.Max(1, h / 3), Pal.GroundDeep);
-                p.Rect(0, h - 3, w, 3, Pal.GroundTop);
+                // üstten alta koyulaşan toprak
+                for (int y = 0; y < h; y++)
+                {
+                    float t = 1f - y / (float)(h - 1);
+                    p.Rect(0, y, w, 1, Color.Lerp(Pal.GroundBody, Pal.GroundDeep, Mathf.Pow(t, 0.6f)));
+                }
+                p.Rect(0, h - 5, w, 5, Pal.GroundTop);
+                p.Rect(0, h - 9, w, 4, Color.Lerp(Pal.GroundTop, Pal.GroundBody, 0.55f));
+                var grassHi = Color.Lerp(Pal.GroundTop, Pal.White, 0.18f);
                 for (int x = 0; x < w; x++)
                 {
-                    if (rng.Next(0, 100) < 22) p.Set(x, h - 4, Pal.GroundTop);
-                    if (rng.Next(0, 100) < 10) p.Rect(x, h - 7 - rng.Next(0, 6), 1, 2, Pal.Dark3);
+                    p.Set(x, h - 1, grassHi);
+                    if (rng.Next(0, 100) < 30) p.Set(x, h - 5, Pal.GroundTop);
+                    if (rng.Next(0, 100) < 14) p.Rect(x, h - 6 - rng.Next(0, 3), 1, 2, Pal.GroundDeep);
+                    // toprak dokusu: açık/koyu benekler
+                    for (int k = 0; k < 3; k++)
+                    {
+                        int y = rng.Next(0, h - 6);
+                        if (rng.Next(0, 100) < 16)
+                            p.Rect(x, y, 1 + rng.Next(0, 2), 1, rng.Next(0, 2) == 0 ? Pal.GroundDeep : Pal.Soil);
+                    }
                 }
                 return p.ToSprite(0f, 1f);
             });

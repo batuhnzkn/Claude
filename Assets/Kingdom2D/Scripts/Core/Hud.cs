@@ -4,27 +4,36 @@ namespace Kingdom2D
 {
     /// <summary>
     /// Ekran arayüzü. Unity UI paketine bağımlı olmamak için kameraya bağlı
-    /// sprite'lar ve piksel fontla çizilir.
+    /// sprite'lar ve piksel fontla çizilir. Tüm ölçüler kamera boyutuna oranlıdır.
     /// </summary>
     public class Hud : MonoBehaviour
     {
+        const float RefSize = 4.9f;   // ölçeklerin tasarlandığı kamera boyutu
+
+        static readonly VillagerRole[] RosterRoles =
+        {
+            VillagerRole.Peasant, VillagerRole.Archer, VillagerRole.Builder,
+            VillagerRole.Farmer, VillagerRole.Knight
+        };
+
         GameConfig cfg;
         GameManager gm;
         Camera cam;
         Transform camT;
 
-        SpriteRenderer coinIcon, coinText, rosterText;
+        SpriteRenderer topBar;
+        SpriteRenderer coinIcon, coinText;
+        SpriteRenderer[] rosterIcons = new SpriteRenderer[5];
+        SpriteRenderer[] rosterCounts = new SpriteRenderer[5];
         SpriteRenderer dayText, barBack, barFill;
-        SpriteRenderer flashText;
-        SpriteRenderer hintText;
-        SpriteRenderer hintText2;
+        SpriteRenderer flashText, hintText, hintText2;
         SpriteRenderer leftWarn, rightWarn;
 
         GameObject overRoot;
         SpriteRenderer overDim, overTitle, overReason, overDay, overBest, overHint;
 
         float flashTimer;
-        float hintTimer = 24f;
+        float hintTimer = 26f;
 
         public void Init(GameConfig config, GameManager manager, Camera camera)
         {
@@ -33,44 +42,55 @@ namespace Kingdom2D
             cam = camera;
             camT = camera.transform;
 
+            topBar = Util.Spawn(camT, Art.FadeStrip(32), Vector3.zero, Layer.Hud - 2, "hud_topbar");
+            topBar.color = new Color(0.03f, 0.04f, 0.08f, 0.5f);
+
             coinIcon = Util.Spawn(camT, Art.Coin, Vector3.zero, Layer.Hud, "hud_coinIcon");
-            coinIcon.transform.localScale = Vector3.one * 2.2f;
-            coinText = Text("hud_coins", 2.4f);
-            rosterText = Text("hud_roster", 1.5f);
-            dayText = Text("hud_day", 2.6f, 0.5f);
-            flashText = Text("hud_flash", 3f, 0.5f);
-            hintText = Text("hud_hint", 1.5f, 0.5f);
-            hintText2 = Text("hud_hint2", 1.4f, 0.5f);
-            leftWarn = Text("hud_warnL", 3.4f, 0.5f);
-            rightWarn = Text("hud_warnR", 3.4f, 0.5f);
+            coinText = Text("hud_coins");
+
+            for (int i = 0; i < RosterRoles.Length; i++)
+            {
+                rosterIcons[i] = Util.Spawn(camT, Art.RoleIcon(RosterRoles[i]), Vector3.zero, Layer.Hud, "hud_role");
+                rosterCounts[i] = Text("hud_roleCount");
+            }
+
+            dayText = Text("hud_day", 0.5f);
+            flashText = Text("hud_flash", 0.5f);
+            hintText = Text("hud_hint", 0.5f);
+            hintText2 = Text("hud_hint2", 0.5f);
+            leftWarn = Text("hud_warnL", 0.5f);
+            rightWarn = Text("hud_warnR", 0.5f);
             Set(leftWarn, "<", Color.white, 0.5f);
             Set(rightWarn, ">", Color.white, 0.5f);
 
             barBack = Util.Spawn(camT, Art.Solid, Vector3.zero, Layer.Hud, "hud_barBack");
             barFill = Util.Spawn(camT, Art.Solid, Vector3.zero, Layer.Hud + 1, "hud_barFill");
-            barBack.color = new Color(0f, 0f, 0f, 0.45f);
+            barBack.color = new Color(0f, 0f, 0f, 0.5f);
             barFill.color = Pal.Gold;
 
             BuildGameOver();
         }
 
-        SpriteRenderer Text(string name, float scale, float pivotX = 0f)
+        SpriteRenderer Text(string name, float pivotX = 0f)
         {
-            var sr = Util.Spawn(camT, PixelFont.Make(" ", Pal.White, 1, pivotX, 0.5f), Vector3.zero,
-                Layer.HudText, name);
-            sr.transform.localScale = Vector3.one * scale;
-            return sr;
+            return Util.Spawn(camT, PixelFont.Make(" ", Pal.White, 1, pivotX, 0.5f), Vector3.zero, Layer.HudText, name);
         }
 
         void Set(SpriteRenderer sr, string text, Color color, float pivotX = 0f)
         {
-            if (sr == null) return;
-            sr.sprite = PixelFont.Make(text, color, 1, pivotX, 0.5f);
+            if (sr != null) sr.sprite = PixelFont.Make(text, color, 1, pivotX, 0.5f);
         }
 
-        static void Scale(SpriteRenderer sr, float w, float h)
+        static void Place(SpriteRenderer sr, float x, float y, float scale)
+        {
+            sr.transform.localPosition = new Vector3(x, y, 10f);
+            sr.transform.localScale = Vector3.one * scale;
+        }
+
+        static void Stretch(SpriteRenderer sr, float x, float y, float w, float h)
         {
             Vector2 s = sr.sprite.bounds.size;
+            sr.transform.localPosition = new Vector3(x, y, 9.5f);
             sr.transform.localScale = new Vector3(w / s.x, h / s.y, 1f);
         }
 
@@ -78,22 +98,19 @@ namespace Kingdom2D
         {
             overRoot = Util.Node(camT, "hud_gameover", Vector3.zero);
             overDim = Util.Spawn(overRoot.transform, Art.Solid, new Vector3(0f, 0f, 8f), Layer.Hud - 1, "dim");
-            overDim.color = new Color(0.02f, 0.01f, 0.04f, 0.82f);
-
-            overTitle = GoText(5.5f);
-            overReason = GoText(2.2f);
-            overDay = GoText(2.6f);
-            overBest = GoText(1.9f);
-            overHint = GoText(2.2f);
+            overDim.color = new Color(0.02f, 0.01f, 0.04f, 0.84f);
+            overTitle = GoText();
+            overReason = GoText();
+            overDay = GoText();
+            overBest = GoText();
+            overHint = GoText();
             overRoot.SetActive(false);
         }
 
-        SpriteRenderer GoText(float scale)
+        SpriteRenderer GoText()
         {
-            var sr = Util.Spawn(overRoot.transform, PixelFont.Make(" ", Pal.White, 1, 0.5f, 0.5f), Vector3.zero,
+            return Util.Spawn(overRoot.transform, PixelFont.Make(" ", Pal.White, 1, 0.5f, 0.5f), Vector3.zero,
                 Layer.HudText, "go_text");
-            sr.transform.localScale = Vector3.one * scale;
-            return sr;
         }
 
         // ----------------------------------------------------------- mesajlar
@@ -101,7 +118,7 @@ namespace Kingdom2D
         public void Flash(string message, Color color)
         {
             Set(flashText, message, color, 0.5f);
-            flashTimer = 2.6f;
+            flashTimer = 2.8f;
         }
 
         public void ShowGameOver(int day, string reason, int best)
@@ -122,65 +139,72 @@ namespace Kingdom2D
 
             float hh = cam.orthographicSize;
             float hw = hh * cam.aspect;
-            float top = hh - 0.75f;
-            float left = -hw + 0.7f;
+            float ui = hh / RefSize;                 // her şey kamera boyutuna oranlı
+            float top = hh - 0.55f * ui;
+            float left = -hw + 0.55f * ui;
 
-            // altın
+            Stretch(topBar, 0f, hh - 1.1f * ui, hw * 2f, 2.2f * ui);
+
+            // --- altın
             var king = gm.King;
             int coins = king != null ? king.Coins : 0;
             int cap = king != null ? king.Capacity : 0;
-            coinIcon.transform.localPosition = new Vector3(left, top, 10f);
-            coinText.transform.localPosition = new Vector3(left + 0.45f, top, 10f);
+            Place(coinIcon, left + 0.17f * ui, top, 1.5f * ui);
+            Place(coinText, left + 0.42f * ui, top, 1.8f * ui);
             Set(coinText, coins + "/" + cap, coins >= cap ? Pal.Flame : Pal.Gold);
 
-            // nüfus
-            rosterText.transform.localPosition = new Vector3(left - 0.1f, top - 0.95f, 10f);
-            Set(rosterText, "KOYLU:" + gm.CountRole(VillagerRole.Peasant)
-                            + " OKCU:" + gm.CountRole(VillagerRole.Archer)
-                            + " INSA:" + gm.CountRole(VillagerRole.Builder)
-                            + " CIFT:" + gm.CountRole(VillagerRole.Farmer)
-                            + " SOVALYE:" + gm.CountRole(VillagerRole.Knight), Pal.White);
+            // --- nüfus (ikon + sayı)
+            float rx = left + 0.15f * ui;
+            float ry = top - 0.72f * ui;
+            for (int i = 0; i < RosterRoles.Length; i++)
+            {
+                int n = gm.CountRole(RosterRoles[i]);
+                Place(rosterIcons[i], rx, ry, 0.85f * ui);
+                rosterIcons[i].color = n > 0 ? Color.white : new Color(1f, 1f, 1f, 0.3f);
+                Place(rosterCounts[i], rx + 0.3f * ui, ry - 0.02f * ui, 1.25f * ui);
+                Set(rosterCounts[i], n.ToString(), n > 0 ? Pal.White : new Color(1f, 1f, 1f, 0.45f));
+                rx += (0.92f + (n >= 10 ? 0.24f : 0f)) * ui;
+            }
 
-            // gün
+            // --- gün + gece sayacı
             bool night = gm.IsNight;
             bool blood = gm.Clock != null && gm.Clock.BloodMoon;
-            dayText.transform.localPosition = new Vector3(0f, top, 10f);
-            Set(dayText, gm.Day + ". GUN", blood && night ? Pal.Cape : Pal.White, 0.5f);
+            Place(dayText, 0f, top, 1.9f * ui);
+            Set(dayText, gm.Day + ". GUN", blood ? Pal.Cape : Pal.White, 0.5f);
 
             float p = night ? 1f - gm.Clock.NightProgress : gm.Clock.DayProgress;
-            barBack.transform.localPosition = new Vector3(0f, top - 0.75f, 10f);
-            Scale(barBack, 5.2f, 0.22f);
-            Scale(barFill, Mathf.Max(0.001f, 5f * Mathf.Clamp01(p)), 0.14f);
-            barFill.transform.localPosition = new Vector3(-2.5f + 2.5f * Mathf.Clamp01(p), top - 0.75f, 10f);
-            barFill.color = night ? (blood ? Pal.Cape : new Color(0.55f, 0.65f, 1f)) : Pal.Gold;
+            p = Mathf.Clamp01(p);
+            bool darkish = gm.Darkness > 0.5f;
+            float barW = 4.4f * ui;
+            Stretch(barBack, 0f, top - 0.6f * ui, barW, 0.17f * ui);
+            Stretch(barFill, -barW * 0.5f + barW * 0.5f * p, top - 0.6f * ui, Mathf.Max(0.001f, barW * p), 0.11f * ui);
+            barFill.color = darkish ? (blood ? Pal.Cape : new Color(0.6f, 0.7f, 1f)) : Pal.Gold;
 
-            // mesaj
+            // --- uçuşan mesaj
             flashTimer -= Time.deltaTime;
-            flashText.transform.localPosition = new Vector3(0f, hh * 0.45f, 10f);
-            float fa = Mathf.Clamp01(flashTimer / 0.8f);
+            Place(flashText, 0f, hh * 0.45f, 2.3f * ui);
             var fc = flashText.color;
-            flashText.color = new Color(fc.r, fc.g, fc.b, fa);
+            flashText.color = new Color(fc.r, fc.g, fc.b, Mathf.Clamp01(flashTimer / 0.8f));
             flashText.enabled = flashTimer > 0f;
 
-            // kontrol ipucu
+            // --- başlangıç ipuçları
             hintTimer -= Time.deltaTime;
-            hintText.transform.localPosition = new Vector3(0f, -hh + 0.7f, 10f);
-            Set(hintText, "A/D YURU   SPACE ALTIN AT   R YENIDEN", Pal.White, 0.5f);
             float ha = Mathf.Clamp01(hintTimer / 3f);
-            var hc = hintText.color;
-            hintText.color = new Color(hc.r, hc.g, hc.b, ha);
+            Place(hintText, 0f, -hh + 0.95f * ui, 0.95f * ui);
+            Set(hintText, "A/D YURU   SPACE ALTIN AT   R YENIDEN", Pal.White, 0.5f);
+            hintText.color = new Color(1f, 1f, 1f, ha);
             hintText.enabled = hintTimer > 0f;
 
-            hintText2.transform.localPosition = new Vector3(0f, -hh + 1.25f, 10f);
+            Place(hintText2, 0f, -hh + 0.58f * ui, 0.85f * ui);
             Set(hintText2, "CADIRDAN KOYLU TOPLA - TEZGAHTAN ALET VER - GECEYE OKCU HAZIRLA", Pal.Gold, 0.5f);
             hintText2.color = new Color(1f, 1f, 1f, ha);
             hintText2.enabled = hintTimer > 0f;
 
-            UpdateWarnings(hw, hh);
-            UpdateGameOver(hh);
+            UpdateWarnings(hw, hh, ui);
+            UpdateGameOver(hw, hh, ui);
         }
 
-        void UpdateWarnings(float hw, float hh)
+        void UpdateWarnings(float hw, float hh, float ui)
         {
             bool l = false, r = false;
             float camX = camT.position.x;
@@ -191,29 +215,28 @@ namespace Kingdom2D
                 if (g.X < camX - hw) l = true;
                 else if (g.X > camX + hw) r = true;
             }
-            float pulse = 0.4f + Util.Pulse(Time.time, 7f) * 0.6f;
+            float pulse = 0.35f + Util.Pulse(Time.time, 7f) * 0.65f;
+            var warnColor = new Color(1f, 1f, 1f, pulse);
             leftWarn.enabled = l;
             rightWarn.enabled = r;
-            leftWarn.transform.localPosition = new Vector3(-hw + 0.5f, 0.6f, 10f);
-            rightWarn.transform.localPosition = new Vector3(hw - 0.5f, 0.6f, 10f);
-            var warnColor = new Color(Pal.Cape.r, Pal.Cape.g, Pal.Cape.b, pulse);
+            Place(leftWarn, -hw + 0.4f * ui, 0.4f * ui, 2.4f * ui);
+            Place(rightWarn, hw - 0.4f * ui, 0.4f * ui, 2.4f * ui);
             leftWarn.color = warnColor;
             rightWarn.color = warnColor;
         }
 
-        void UpdateGameOver(float hh)
+        void UpdateGameOver(float hw, float hh, float ui)
         {
             if (overRoot == null || !overRoot.activeSelf) return;
-            float hw = hh * cam.aspect;
-            Scale(overDim, hw * 2.4f, hh * 2.4f);
+            Vector2 s = overDim.sprite.bounds.size;
             overDim.transform.localPosition = new Vector3(0f, 0f, 8f);
-            overTitle.transform.localPosition = new Vector3(0f, 2.4f, 7.9f);
-            overReason.transform.localPosition = new Vector3(0f, 1.2f, 7.9f);
-            overDay.transform.localPosition = new Vector3(0f, 0.2f, 7.9f);
-            overBest.transform.localPosition = new Vector3(0f, -0.7f, 7.9f);
-            overHint.transform.localPosition = new Vector3(0f, -2.2f, 7.9f);
-            float a = 0.35f + Util.Pulse(Time.time, 4f) * 0.65f;
-            overHint.color = new Color(1f, 1f, 1f, a);
+            overDim.transform.localScale = new Vector3(hw * 2.4f / s.x, hh * 2.4f / s.y, 1f);
+            Place(overTitle, 0f, 1.9f * ui, 3.8f * ui);
+            Place(overReason, 0f, 0.95f * ui, 1.7f * ui);
+            Place(overDay, 0f, 0.1f * ui, 1.9f * ui);
+            Place(overBest, 0f, -0.7f * ui, 1.5f * ui);
+            Place(overHint, 0f, -1.9f * ui, 1.8f * ui);
+            overHint.color = new Color(1f, 1f, 1f, 0.35f + Util.Pulse(Time.time, 4f) * 0.65f);
         }
     }
 }

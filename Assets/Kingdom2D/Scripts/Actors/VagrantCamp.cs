@@ -24,6 +24,7 @@ namespace Kingdom2D
 
             Util.Spawn(go.transform, Art.Tent, Vector3.zero, Layer.StructureBack, "tent");
             camp.fire = Util.Spawn(go.transform, Art.Flame(0), new Vector3(1.4f, 0f, 0f), Layer.Decor, "fire");
+            NightGlow.Create(go.transform, new Vector3(1.4f, 0.45f, 0f), 6f, 0.5f, new Color(1f, 0.72f, 0.4f));
 
             camp.sink = go.AddComponent<CoinSink>();
             camp.sink.Setup(GameManager.I.Config.costRecruit, 1.9f, camp.OnPaid, true);

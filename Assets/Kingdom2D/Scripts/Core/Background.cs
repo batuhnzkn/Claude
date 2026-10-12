@@ -77,7 +77,7 @@ namespace Kingdom2D
             AddLayer(worldRoot, Art.Hill(256, 72, 11, Color.white, 0.4f), 0.12f, Layer.HillFar, Pal.HillFar, -1.5f);
             AddLayer(worldRoot, Art.Hill(256, 96, 23, Color.white, 0.5f), 0.26f, Layer.HillMid, Pal.HillMid, -2.2f);
             AddLayer(worldRoot, Art.Hill(256, 120, 37, Color.white, 0.55f), 0.42f, Layer.HillNear, Pal.HillNear, -3.5f);
-            AddLayer(worldRoot, Art.ForestStrip(256, 56, 51, Color.white), 0.66f, Layer.ForestBack, Pal.ForestBack, -0.4f);
+            AddLayer(worldRoot, Art.ForestStrip(256, 72, 51, Color.white), 0.66f, Layer.ForestBack, Pal.ForestBack, -0.9f);
 
             // --- zemin şeridi
             var groundRoot = Util.Node(worldRoot, "ground", Vector3.zero).transform;
@@ -91,8 +91,8 @@ namespace Kingdom2D
             }
 
             // --- gece karartması
-            night = Util.Spawn(camT, Art.Solid, new Vector3(0, 0, 9f), Layer.Night, "nightOverlay");
-            Fit(night, viewW * 1.3f, viewH * 1.3f);
+            night = Util.Spawn(camT, Art.NightVeil(64), new Vector3(0, 0, 9f), Layer.Night, "nightOverlay");
+            Fit(night, viewW * 1.4f, viewH);
             night.color = new Color(0, 0, 0, 0);
         }
 
@@ -131,7 +131,7 @@ namespace Kingdom2D
             UpdateClouds(dark, blood);
 
             Color nightTint = blood ? new Color(0.35f, 0.03f, 0.08f) : new Color(0.04f, 0.06f, 0.16f);
-            night.color = new Color(nightTint.r, nightTint.g, nightTint.b, dark * (blood ? 0.5f : 0.62f));
+            night.color = new Color(nightTint.r, nightTint.g, nightTint.b, dark * (blood ? 0.5f : 0.6f));
             stars.color = new Color(1f, 1f, 1f, Mathf.Clamp01(dark * 1.2f - 0.15f) * (blood ? 0.4f : 1f));
         }
 
@@ -166,8 +166,8 @@ namespace Kingdom2D
             float t = dayNight.CelestialT;
             bool isNight = dayNight.IsNight;
             float hw = rig.HalfWidth, hh = cfg.cameraSize;
-            float x = Mathf.Lerp(-hw * 0.8f, hw * 0.8f, t);
-            float y = Mathf.Sin(t * Mathf.PI) * hh * 0.72f + hh * 0.05f;
+            float x = Mathf.Lerp(-hw * 0.82f, hw * 0.82f, t);
+            float y = Mathf.Sin(t * Mathf.PI) * hh * 0.78f - hh * 0.12f;
 
             sun.enabled = !isNight;
             moon.enabled = isNight;
@@ -203,7 +203,7 @@ namespace Kingdom2D
 
                 Color c = layer.dayColor;
                 Color nightC = blood
-                    ? new Color(c.r * 0.45f, c.g * 0.16f, c.b * 0.2f)
+                    ? new Color(c.r * 0.44f, c.g * 0.26f, c.b * 0.3f)
                     : new Color(c.r * 0.26f, c.g * 0.3f, c.b * 0.5f);
                 Color final = Color.Lerp(c, nightC, dark);
                 for (int i = 0; i < n; i++) layer.tiles[i].color = final;

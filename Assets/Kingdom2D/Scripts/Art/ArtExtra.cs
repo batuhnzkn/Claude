@@ -11,7 +11,7 @@ namespace Kingdom2D
             {
                 var rng = new System.Random(seed);
                 var p = new Pix(w, h);
-                for (int i = 0; i < w / 5 + 2; i++)
+                for (int i = 0; i < w / 3 + 4; i++)
                 {
                     float cx = rng.Next(0, w);
                     int th = h / 2 + rng.Next(0, h / 2);
@@ -34,6 +34,57 @@ namespace Kingdom2D
                 }
                 p.Rect(0, 0, w, 2, color);
                 return p.ToSprite(0f, 0f);
+            });
+        }
+
+        /// <summary>Üstten alta kaybolan perde (arayüz okunabilirliği için).</summary>
+        public static Sprite FadeStrip(int h)
+        {
+            return Get("fade" + h, () =>
+            {
+                var p = new Pix(4, h);
+                for (int y = 0; y < h; y++)
+                {
+                    float t = y / (float)(h - 1);          // 0 = alt, 1 = üst
+                    p.Rect(0, y, 4, 1, new Color(1f, 1f, 1f, Mathf.Pow(t, 1.4f)));
+                }
+                return p.ToSprite(0.5f, 0.5f, h);
+            });
+        }
+
+        /// <summary>Gece karartması: zeminde tam, gökyüzüne doğru kaybolur (ay/yıldızlar boğulmasın).</summary>
+        public static Sprite NightVeil(int h)
+        {
+            return Get("veil" + h, () =>
+            {
+                var p = new Pix(4, h);
+                for (int y = 0; y < h; y++)
+                {
+                    float t = y / (float)(h - 1);            // 0 = ekranın altı
+                    float a = t <= 0.52f ? 1f : Mathf.Clamp01(1f - (t - 0.52f) / 0.26f);
+                    p.Rect(0, y, 4, 1, new Color(1f, 1f, 1f, a * a));
+                }
+                return p.ToSprite(0.5f, 0.5f, h);
+            });
+        }
+
+        /// <summary>Yumuşak ışık halesi (ateş, meşale, delik parıltısı).</summary>
+        public static Sprite Glow(int size)
+        {
+            return Get("glow" + size, () =>
+            {
+                var p = new Pix(size, size);
+                float r = size * 0.5f;
+                for (int y = 0; y < size; y++)
+                    for (int x = 0; x < size; x++)
+                    {
+                        float dx = (x + 0.5f - r) / r, dy = (y + 0.5f - r) / r;
+                        float d = Mathf.Sqrt(dx * dx + dy * dy);
+                        if (d >= 1f) continue;
+                        float a = Mathf.Pow(1f - d, 2.2f);
+                        p.Set(x, y, new Color(1f, 1f, 1f, a));
+                    }
+                return p.ToSprite(0.5f, 0.5f, size);   // 1 birim = 1 sprite
             });
         }
 

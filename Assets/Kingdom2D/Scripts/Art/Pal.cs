@@ -34,8 +34,8 @@ namespace Kingdom2D
         public static readonly Color MetalDark = Hex("#5E6670");
 
         // Greed (düşman)
-        public static readonly Color GreedSkin = Hex("#2A1F33");
-        public static readonly Color GreedSkin2 = Hex("#3D2C4A");
+        public static readonly Color GreedSkin = Hex("#372840");
+        public static readonly Color GreedSkin2 = Hex("#4C3760");
         public static readonly Color Eye = Hex("#FF8A3D");
         public static readonly Color EyeHot = Hex("#FFD089");
 
@@ -55,9 +55,9 @@ namespace Kingdom2D
         public static readonly Color FlameHot = Hex("#FFD36B");
 
         // Zemin
-        public static readonly Color GroundTop = Hex("#2C4433");
-        public static readonly Color GroundBody = Hex("#1A2820");
-        public static readonly Color GroundDeep = Hex("#101A14");
+        public static readonly Color GroundTop = Hex("#40603C");
+        public static readonly Color GroundBody = Hex("#2A3B2C");
+        public static readonly Color GroundDeep = Hex("#1C2620");
 
         // Gökyüzü (üst / alt)
         public static readonly Color SkyDayTop = Hex("#5AA8DE");
@@ -70,10 +70,10 @@ namespace Kingdom2D
         public static readonly Color SkyBloodBot = Hex("#5E1522");
 
         // Tepeler (uzaktan yakına)
-        public static readonly Color HillFar = Hex("#6E86A8");
-        public static readonly Color HillMid = Hex("#4A5C7A");
-        public static readonly Color HillNear = Hex("#2E3A52");
-        public static readonly Color ForestBack = Hex("#1D2636");
+        public static readonly Color HillFar = Hex("#A8C0D8");
+        public static readonly Color HillMid = Hex("#7D96B4");
+        public static readonly Color HillNear = Hex("#4A6180");
+        public static readonly Color ForestBack = Hex("#38506B");
 
         /// <summary>Piksel haritalarında kullanılan karakter -> renk eşlemesi.</summary>
         public static readonly Dictionary<char, Color> Map = new Dictionary<char, Color>

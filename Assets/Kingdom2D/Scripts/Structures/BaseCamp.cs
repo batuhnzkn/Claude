@@ -25,6 +25,7 @@ namespace Kingdom2D
             c.sr = Util.Spawn(go.transform, Art.Camp(1), Vector3.zero, Layer.StructureBack, "camp");
             c.fire = Util.Spawn(go.transform, Art.Flame(0), new Vector3(-0.25f, 0.05f, 0f), Layer.StructureBack + 2, "campfire");
             c.HalfWidth = c.sr.sprite.bounds.size.x * 0.5f;
+            NightGlow.Create(go.transform, new Vector3(-0.2f, 0.7f, 0f), 9f, 0.6f, new Color(1f, 0.74f, 0.4f));
 
             c.sink = go.AddComponent<CoinSink>();
             c.SetupSink();

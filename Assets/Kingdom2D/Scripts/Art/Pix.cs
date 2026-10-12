@@ -135,6 +135,13 @@ namespace Kingdom2D
             }
         }
 
+        /// <summary>Saydam olmayan tüm pikselleri tek renge boyar (arayüz ikonları için).</summary>
+        public void Recolor(Color c)
+        {
+            for (int i = 0; i < px.Length; i++)
+                if (px[i].a > 0) px[i] = c;
+        }
+
         /// <summary>Üstten gelen ışık hissi için her sütunun en üst pikselini aydınlatır.</summary>
         public void TopLight(Color c, int depth = 1)
         {

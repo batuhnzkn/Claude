@@ -24,6 +24,7 @@ namespace Kingdom2D
             p.X = x;
             p.Side = side;
             p.sr = Util.Spawn(go.transform, Art.Portal(0), Vector3.zero, Layer.Portal, "portal");
+            NightGlow.Create(go.transform, new Vector3(0f, 0.35f, 0f), 7f, 0.5f, new Color(1f, 0.45f, 0.2f));
             if (GameManager.I != null) GameManager.I.Portals.Add(p);
             return p;
         }

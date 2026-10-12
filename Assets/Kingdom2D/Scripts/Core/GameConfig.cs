@@ -66,8 +66,8 @@ namespace Kingdom2D
         public int treeCount = 46;
 
         [Header("Kamera")]
-        public float cameraSize = 6.6f;
-        public float cameraHeight = 2.1f;
+        public float cameraSize = 4.9f;
+        public float cameraHeight = 2.85f;
         public float cameraLerp = 4.5f;
         public float cameraLookAhead = 1.6f;
 
